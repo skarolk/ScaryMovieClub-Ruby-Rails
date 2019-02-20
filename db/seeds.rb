@@ -15,8 +15,9 @@ end
 
 def create_movies()
   page_number = 1
+  posterUrl = "https://image.tmdb.org/t/p/w780"
   total_pages = page_check()
-  while page_number < 20
+  while page_number < 60
     movies = Tmdb::Genre.movies(27, page: page_number)
     i = 0
     while i < 20
@@ -25,8 +26,9 @@ def create_movies()
       elsif (movies.results[i].original_language == "en") && (movies.results[i].adult == false) && (movies.results[i].poster_path != nil)
         movie_name = movies.results[i].original_title
         movie_summary = movies.results[i].overview
-        movie_poster = movies.results[i].poster_path
+        movie_poster = posterUrl + movies.results[i].poster_path
         movie_release = movies.results[i].release_date
+        # movie_trailer = youtubeUrl + Tmdb::Movie.videos(movies.results[i].id).last.key
         Movie.create(name: movie_name, poster: movie_poster, synopsis: movie_summary, release: movie_release)
         i += 1
         puts "creating #{movie_name}"
