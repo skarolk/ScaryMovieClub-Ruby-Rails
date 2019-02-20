@@ -29,8 +29,9 @@ def create_movies()
         movie_summary = movies.results[i].overview
         movie_poster = posterUrl + movies.results[i].poster_path
         movie_release = movies.results[i].release_date
+        movie_original_id = movies.results[i].id
         # movie_trailer = youtubeUrl + Tmdb::Movie.videos(movies.results[i].id).last.key
-        Movie.create(name: movie_name, poster: movie_poster, synopsis: movie_summary, release: movie_release)
+        Movie.create(name: movie_name, poster: movie_poster, synopsis: movie_summary, release: movie_release, originalid: movie_original_id)
         i += 1
         puts "creating #{movie_name}"
       else
