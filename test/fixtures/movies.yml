@@ -1,0 +1,13 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  poster: MyString
+  synopsis: MyString
+  release: MyString
+
+two:
+  name: MyString
+  poster: MyString
+  synopsis: MyString
+  release: MyString
