@@ -16,6 +16,7 @@ end
 def create_movies()
   page_number = 1
   posterUrl = "https://image.tmdb.org/t/p/w780"
+  youtubeUrl = "https://www.youtube.com/watch?v="
   total_pages = page_check()
   while page_number < 60
     movies = Tmdb::Genre.movies(27, page: page_number)
