@@ -1,12 +1,16 @@
 class Api::V1::MoviesController < ApplicationController
     respond_to :json
-    include DeviseTokenAuth::Concerns::SetUserByToken
+    # include DeviseTokenAuth::Concerns::SetUserByToken
 
-    protect_from_forgery with: :null_session, only: Proc.new { |c| c.request.format.json? }  
-    before_action :authenticate_user!
+    # protect_from_forgery with: :null_session, only: Proc.new { |c| c.request.format.json? }  
+    # before_action :authenticate_user!
 
     def index
-        @movies = Movie.all
+        offset = params[:page].to_i*params[:limit].to_i - params[:limit].to_i + 1
+        limit = params[:page].to_i*params[:limit].to_i
+
+        @movies = Movie.find_in_batches(start: offset, finish: limit)
+
         render json: @movies
     end
 
