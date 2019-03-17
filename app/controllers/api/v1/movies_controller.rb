@@ -6,9 +6,13 @@ class Api::V1::MoviesController < ApplicationController
     # before_action :authenticate_user!
 
     def index
+        #page/limit on queries coming from frontend
         offset = params[:page].to_i*params[:limit].to_i - params[:limit].to_i + 1
         limit = params[:page].to_i*params[:limit].to_i
 
+        #serving up batch of results requested
+        #200 results serve up quickly
+        #50 results serve up instantly
         @movies = Movie.find_in_batches(start: offset, finish: limit)
 
         render json: @movies
