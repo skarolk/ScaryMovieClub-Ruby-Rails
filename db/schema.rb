@@ -21,7 +21,6 @@ ActiveRecord::Schema.define(version: 2019_02_20_163159) do
     t.string "synopsis"
     t.string "release"
     t.string "trailer"
-    t.integer "originalid"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

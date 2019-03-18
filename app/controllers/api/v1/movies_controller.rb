@@ -19,7 +19,8 @@ class Api::V1::MoviesController < ApplicationController
         #50 results serve up instantly
         @movies = Movie.find_in_batches(start: offset, finish: limit)
 
-        render json: @movies
+        # render json: @movies
+        render :json => @movies
     end
 
     def show

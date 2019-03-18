@@ -16,22 +16,29 @@ end
 def create_movies()
   page_number = 1
   posterUrl = "https://image.tmdb.org/t/p/w780"
-  youtubeUrl = "https://www.youtube.com/watch?v="
+  youtubeUrl = "https://www.youtube.com/results?search_query="
   total_pages = page_check()
+  current_year = Time.now.strftime("%Y-%m-%d").slice(0..3).to_i
+  
   while page_number < 60
     movies = Tmdb::Genre.movies(27, page: page_number)
     i = 0
     while i < 20
       if Movie.exists?(:synopsis => movies.results[i].overview)
         i += 1
-      elsif (movies.results[i].original_language == "en") && (movies.results[i].adult == false) && (movies.results[i].poster_path != nil)
+      elsif (movies.results[i].original_language == "en") && (movies.results[i].adult == false) && (movies.results[i].poster_path != nil) && (movies.results[i].release_date.slice(0..3).to_i < current_year)       
         movie_name = movies.results[i].original_title
         movie_summary = movies.results[i].overview
         movie_poster = posterUrl + movies.results[i].poster_path
         movie_release = movies.results[i].release_date
         movie_original_id = movies.results[i].id
+        # TMDB trailers
         # movie_trailer = youtubeUrl + Tmdb::Movie.videos(movies.results[i].id).last.key
-        Movie.create(name: movie_name, poster: movie_poster, synopsis: movie_summary, release: movie_release, originalid: movie_original_id)
+
+        # Youtube Search
+        formatted_name = movie_name.tr_s(' ', '+') + "+trailer"
+        movie_trailer = youtubeUrl + formatted_name
+        Movie.create(name: movie_name, poster: movie_poster, synopsis: movie_summary, release: movie_release, trailer: movie_trailer)
         i += 1
         puts "creating #{movie_name}"
       else
