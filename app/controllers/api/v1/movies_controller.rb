@@ -24,9 +24,16 @@ class Api::V1::MoviesController < ApplicationController
     end
 
     def show
-        @movie = Movie.find_by(id: params[:id])
-        
-        render json: @movie
+        if params[:id] == "random"
+            random_movie_id = Random.rand(Movie.all.length) - 1
+            @movie = Movie.find_by(id: random_movie_id)
+
+            render :json => @movie
+        else 
+            @movie = Movie.find_by(id: params[:id])
+            
+            render json: @movie
+        end
     end
 
     private
