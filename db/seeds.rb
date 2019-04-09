@@ -15,13 +15,13 @@ def create_movies()
   total_pages = page_check()
   current_year = Time.now.strftime("%Y-%m-%d").slice(0..3).to_i
   
-  while page_number < 60
+  while page_number < page_check()
     movies = Tmdb::Genre.movies(27, page: page_number)
     i = 0
     while i < 20
       if Movie.exists?(:synopsis => movies.results[i].overview)
         i += 1
-      elsif (movies.results[i].original_language == "en") && (movies.results[i].adult == false) && (movies.results[i].poster_path != nil) && (movies.results[i].release_date.slice(0..3).to_i < current_year)       
+      elsif (movies.results[i].original_language == "en") && (movies.results[i].adult == false) && (movies.results[i].poster_path != nil) && (movies.results[i].release_date.slice(0..3).to_i < current_year) && (movies.results[i].original_title != nil)     
         movie_name = movies.results[i].original_title
         movie_summary = movies.results[i].overview
         movie_poster = posterUrl + movies.results[i].poster_path
@@ -40,7 +40,7 @@ def create_movies()
         i += 1
       end
     end
-    if page_number % 30 == 0
+    if page_number % 10 == 0
       puts "on #{page_number} of #{total_pages}"
       puts "waiting ..."
       sleep(30)
