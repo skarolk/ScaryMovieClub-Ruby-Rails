@@ -7,7 +7,7 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable
   include DeviseTokenAuth::Concerns::User
 
-  has_many :ratings
-  has_many :movies, through: :ratings
+  has_many :favorites
+  has_many :movies, through: :favorites
   
 end
