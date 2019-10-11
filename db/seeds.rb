@@ -1,113 +1,118 @@
-# This file should contain all the record creation needed to seed the database with its default values.
-# The data can then be loaded with the rails db:seed command (or created alongside the database with db:setup).
+require 'nokogiri'
+require 'httparty'
+require 'byebug'
 
 puts "creating movies"
 
-def page_check()
-  page_count = Tmdb::Genre.movies(27).total_pages - 1
-  return page_count
-end
+# IMDB Scraper Tool
 
-def create_movies()
-  page_number = 1
-  posterUrl = "https://image.tmdb.org/t/p/w780"
-  youtubeUrl = "https://www.youtube.com/results?search_query="
-  total_pages = page_check()
-  current_year = Time.now.strftime("%Y-%m-%d").slice(0..3).to_i
-  
-  while page_number < page_check()
-    movies = Tmdb::Genre.movies(27, page: page_number)
-    i = 0
-    while i < 20
-      if Movie.exists?(:synopsis => movies.results[i].overview)
-        i += 1
-      elsif (movies.results[i].original_language == "en") && (movies.results[i].adult == false) && (movies.results[i].poster_path != nil) && (movies.results[i].release_date.slice(0..3).to_i < current_year) && (movies.results[i].original_title != nil)     
-        movie_name = movies.results[i].original_title
-        movie_summary = movies.results[i].overview
-        movie_poster = posterUrl + movies.results[i].poster_path
-        movie_release = movies.results[i].release_date
-        movie_original_id = movies.results[i].id
-        # TMDB trailers
-        # movie_trailer = youtubeUrl + Tmdb::Movie.videos(movies.results[i].id).last.key
+def scraper
+  # Nokogiri prepping page for scraping
+  url = 'https://www.imdb.com/search/title/?title_type=movie&genres=horror&sort=release_date,asc&explore=title_type,genres'
+  unparsed_page = HTTParty.get(url)
+  parsed_page = Nokogiri::HTML(unparsed_page)
+  movie_list = parsed_page.css('div.lister-item-content')
 
-        # Youtube Search
-        formatted_name = movie_name.tr_s(' ', '+') + "+trailer"
-        movie_trailer = youtubeUrl + formatted_name
-        Movie.create(name: movie_name, poster: movie_poster, synopsis: movie_summary, release: movie_release, trailer: movie_trailer)
-        i += 1
-        puts "creating #{movie_name}"
+  # Array of scraped movies
+  movies = Array.new 
+  # Grabbing movie info
+  movie_list.each do |movie_listing|
+    # Attributes: name, poster, synopsis, release, trailer
+    movie_synopsis = movie_listing.css('p.text-muted')[1].text
+    movie_title = movie_listing.css('a')[0].text
+
+    # Format synopsis
+    def format_synopsis(synopsis)
+      if synopsis[0] == "\n" && synopsis[-1] == "\n"
+        movie_synopsis = synopsis[5..-36]
+      elsif synopsis[0] == "\n"
+        movie_synopsis = synopsis[5..-1]
       else
-        i += 1
+        movie_synopsis = synopsis
       end
     end
-    if page_number % 10 == 0
-      puts "on #{page_number} of #{total_pages}"
-      puts "waiting ..."
-      sleep(30)
-    end
-    page_number += 1
-  end
-end
 
-create_movies()
+    movie = { #hash of each movie
+      name: movie_title, 
+      synopsis: format_synopsis(movie_synopsis),
+      release: movie_listing.css('span.lister-item-year').text,
+      # trailer: ,
+      # page_url: "https://sworkit.com" + movie_listing.css('a')[0].attributes["href"].value
+    }
+    byebug
+    movies << movie 
+  end 
+  # index = 0 
+  # exercises.each do |each_exercise|
+  #     ex_unparsed_page = HTTParty.get(each_exercise[:page_url])
+  #     ex_parsed_page = Nokogiri::HTML(ex_unparsed_page)
+  #     exercise_details = ex_parsed_page.css('div.shadow.card.exercise-card')
+  #     exercise = {
+  #         exercise_difficulty: exercise_details.css('p')[0] ? exercise_details.css('p')[0].text : "no information",
+  #         exercise_impact_level: exercise_details.css('p')[1] ? exercise_details.css('p')[1].text : "no information",
+  #         target_body_parts: exercise_details.css('p')[2] ? exercise_details.css('p')[2].text : "no information",
+  #         exercise_video: exercise_details.css('video')[0] ? exercise_details.css('video')[0].attributes['src'].value : "no video"
+  #     }
+  #     exercises[index].merge!(exercise)
+  #     # byebug
+  #     Exercise.create(exercises[index])
+  #     # puts each_exercise
+  #     puts "#{index + 1}: creating #{each_exercise[:exercise_name]}"
+  #     index += 1
+  #     # byebug
+  # end 
+end 
 
-# puts "beging seeding test data"
+scraper()
 
-# puts "seeding movies"
-# Movie.create(name: "Friday the 13th", poster: "posterurl", synopsis: "scary stuff")
-# Movie.create(name: "The Conjuring", poster: "posterurl", synopsis: "really scary stuff")
-# Movie.create(name: "The Nun", poster: "posterurl", synopsis: "very scary stuff")
-# Movie.create(name: "The Ring", poster: "posterurl", synopsis: "funny scary stuff")
+#  TMDB API
 
-# puts "seeding clubs"
-# Club.create(movie_id: 54, active: true)
-# Club.create(movie_id: 2, active: true)
-# Club.create(movie_id: 3, active: true)
-# Club.create(movie_id: 4, active: false)
-# Club.create(movie_id: 62, active: true)
+# def page_check()
+#   page_count = Tmdb::Genre.movies(27).total_pages - 1
+#   return page_count
+# end
 
-# puts "seeding users"
-# User.create(username: "Seb", email: "seb@seb", password: "secure", matched: true, club_id: 1, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Chris", email: "chris@chris", password: "secure", matched: true, club_id: 1, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Sabrina", email: "sabrina@sabrina", password: "secure", matched: true, club_id: 1, image: "https://i.imgur.com/RTdi6B1.png")
+# def create_movies()
+#   page_number = 1
+#   posterUrl = "https://image.tmdb.org/t/p/w780"
+#   youtubeUrl = "https://www.youtube.com/results?search_query="
+#   total_pages = page_check()
+#   current_year = Time.now.strftime("%Y-%m-%d").slice(0..3).to_i
+  
+#   while page_number < page_check()
+#     movies = Tmdb::Genre.movies(27, page: page_number)
+#     i = 0
+#     while i < 20
+#       if Movie.exists?(:synopsis => movies.results[i].overview)
+#         i += 1
+#       elsif (movies.results[i].original_language == "en") && (movies.results[i].adult == false) && (movies.results[i].poster_path != nil) && (movies.results[i].release_date.slice(0..3).to_i < current_year) && (movies.results[i].original_title != nil)     
+#         movie_name = movies.results[i].original_title
+#         movie_summary = movies.results[i].overview
+#         movie_poster = posterUrl + movies.results[i].poster_path
+#         movie_release = movies.results[i].release_date
+#         movie_original_id = movies.results[i].id
+#         # TMDB trailers
+#         # movie_trailer = youtubeUrl + Tmdb::Movie.videos(movies.results[i].id).last.key
 
-# User.create(username: "Sasha", email: "sasha@sasha", password: "secure", matched: true, club_id: 2, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "ChiChi", email: "chichi@chichi", password: "secure", matched: true, club_id: 2, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Dude", email: "dude@dude", password: "secure", matched: true, club_id: 2, image: "https://i.imgur.com/RTdi6B1.png")
+#         # Youtube Search
+#         formatted_name = movie_name.tr_s(' ', '+') + "+trailer"
+#         movie_trailer = youtubeUrl + formatted_name
+#         Movie.create(name: movie_name, poster: movie_poster, synopsis: movie_summary, release: movie_release, trailer: movie_trailer)
+#         i += 1
+#         puts "creating #{movie_name}"
+#       else
+#         i += 1
+#       end
+#     end
+#     if page_number % 10 == 0
+#       puts "on #{page_number} of #{total_pages}"
+#       puts "waiting ..."
+#       sleep(30)
+#     end
+#     page_number += 1
+#   end
+# end
 
-# User.create(username: "Bentley", email: "bentley@bentley", password: "secure", matched: true, club_id: 5, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Spencer", email: "spencer@spencer", password: "secure", matched: true, club_id: 5, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Tom", email: "tom@tom", password: "secure", matched: true, club_id: 5, image: "https://i.imgur.com/RTdi6B1.png")
-
-# User.create(username: "Bozena", email: "bozena@bozena", password: "secure", matched: false, club_id: 5, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Nicole", email: "nicole@nicole", password: "secure", matched: false, club_id: 5, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Al", email: "al@al", password: "secure", matched: false, club_id: 5, image: "https://i.imgur.com/RTdi6B1.png")
-
-# User.create(username: "Leszek", email: "leszek@leszek", password: "secure", matched: true, club_id: 1, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Baby", email: "baby@baby", password: "secure", matched: true, club_id: 1, image: "https://i.imgur.com/RTdi6B1.png")
-# User.create(username: "Panther", email: "panther@panther", password: "secure", matched: true, club_id: 1, image: "https://i.imgur.com/RTdi6B1.png")
-
-# puts "seeding ratings"
-# Rating.create(user_id: 1, liked: true, movie_id: 1)
-# Rating.create(user_id: 1, liked: true, movie_id: 2)
-# Rating.create(user_id: 2, liked: false, movie_id: 1)
-# Rating.create(user_id: 3, liked: false, movie_id: 1)
-
-# Rating.create(user_id: 4, liked: true, movie_id: 2)
-# Rating.create(user_id: 4, liked: true, movie_id: 3)
-# Rating.create(user_id: 5, liked: false, movie_id: 2)
-# Rating.create(user_id: 6, liked: false, movie_id: 2)
-
-# Rating.create(user_id: 7, liked: true, movie_id: 3)
-# Rating.create(user_id: 8, liked: false, movie_id: 3)
-# Rating.create(user_id: 9, liked: false, movie_id: 3)
-
-# Rating.create(user_id: 10, liked: true, movie_id: 4)
-# Rating.create(user_id: 11, liked: false, movie_id: 4)
-# Rating.create(user_id: 12, liked: false, movie_id: 4)
-
-# Rating.create(user_id: 13, liked: true, movie_id: 1)
-# Rating.create(user_id: 14, liked: false, movie_id: 1)
-# Rating.create(user_id: 15, liked: false, movie_id: 1)
+# create_movies()
 
 puts "movies created"

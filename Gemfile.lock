@@ -74,6 +74,9 @@ GEM
       activesupport (>= 4.2.0)
     http-cookie (1.0.3)
       domain_name (~> 0.5)
+    httparty (0.17.1)
+      mime-types (~> 3.0)
+      multi_xml (>= 0.5.2)
     i18n (1.5.3)
       concurrent-ruby (~> 1.0)
     jsonapi-renderer (0.2.0)
@@ -97,6 +100,7 @@ GEM
     mini_portile2 (2.4.0)
     minitest (5.11.3)
     msgpack (1.2.6)
+    multi_xml (0.6.0)
     netrc (0.11.0)
     nio4r (2.3.1)
     nokogiri (1.10.1)
@@ -179,7 +183,9 @@ DEPENDENCIES
   bootsnap (>= 1.1.0)
   byebug
   devise_token_auth
+  httparty
   listen (>= 3.0.5, < 3.2)
+  nokogiri
   pg (>= 0.18, < 2.0)
   puma (~> 3.11)
   rack-cors
