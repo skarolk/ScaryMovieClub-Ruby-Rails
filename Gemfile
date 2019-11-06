@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.6.1'
+ruby '2.5.5'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.2.2'
@@ -42,6 +42,7 @@ end
 
 gem 'active_model_serializers'
 gem 'themoviedb-api'
+gem 'devise'
 gem 'devise_token_auth'
 gem 'nokogiri'
 gem 'httparty'
